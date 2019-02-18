@@ -21,35 +21,7 @@ from framebuf import FrameBuffer, MONO_VLSB
 from machine import Pin
 
 from ili9341.constants import *
-from ili9341.spidevice import SPIDevice
-
-_RDDSDR = const(0x0f) # Read Display Self-Diagnostic Result
-_SLPOUT = const(0x11) # Sleep Out
-_GAMSET = const(0x26) # Gamma Set
-_DISPOFF = const(0x28) # Display Off
-_DISPON = const(0x29) # Display On
-_CASET = const(0x2a) # Column Address Set
-_PASET = const(0x2b) # Page Address Set
-_RAMWR = const(0x2c) # Memory Write
-_RAMRD = const(0x2e) # Memory Read
-_MADCTL = const(0x36) # Memory Access Control
-_VSCRSADD = const(0x37) # Vertical Scrolling Start Address
-_PIXSET = const(0x3a) # Pixel Format Set
-_PWCTRLA = const(0xcb) # Power Control A
-_PWCRTLB = const(0xcf) # Power Control B
-_DTCTRLA = const(0xe8) # Driver Timing Control A
-_DTCTRLB = const(0xea) # Driver Timing Control B
-_PWRONCTRL = const(0xed) # Power on Sequence Control
-_PRCTRL = const(0xf7) # Pump Ratio Control
-_PWCTRL1 = const(0xc0) # Power Control 1
-_PWCTRL2 = const(0xc1) # Power Control 2
-_VMCTRL1 = const(0xc5) # VCOM Control 1
-_VMCTRL2 = const(0xc7) # VCOM Control 2
-_FRMCTR1 = const(0xb1) # Frame Rate Control 1
-_DISCTRL = const(0xb6) # Display Function Control
-_ENA3G = const(0xf2) # Enable 3G
-_PGAMCTRL = const(0xe0) # Positive Gamma Control
-_NGAMCTRL = const(0xe1) # Negative Gamma Control
+from hwspi.hwspi import HWSPI
 
 
 class ILI9341:
@@ -58,7 +30,7 @@ class ILI9341:
         height = DEFAULT_HEIGHT, width = DEFAULT_WIDTH,
         madctl = DEFAULT_MADCTL, **kwargs):
         """ Setup and Initialize Display. """
-        self.spi = SPIDevice(busid, cs, baudrate = baudrate, **kwargs)
+        self.spi = HWSPI(busid = busid, cs = cs, baudrate = baudrate, **kwargs)
 
         if dc is None:
             raise RuntimeError('ILI9341 must be initialized with a dc pin number')
@@ -71,7 +43,6 @@ class ILI9341:
         self.height = height
         self.width = width
         self.madctl = pack('>B', madctl)
-        print (self.madctl)
 
         self.reset()
         self.init()
@@ -104,29 +75,29 @@ class ILI9341:
     
     def init(self):
         for command, data in (
-            (_RDDSDR, b"\x03\x80\x02"),
-            (_PWCRTLB, b"\x00\xc1\x30"),
-            (_PWRONCTRL, b"\x64\x03\x12\x81"),
-            (_DTCTRLA, b"\x85\x00\x78"),
-            (_PWCTRLA, b"\x39\x2c\x00\x34\x02"),
-            (_PRCTRL, b"\x20"),
-            (_DTCTRLB, b"\x00\x00"),
-            (_PWCTRL1, b"\x23"),
-            (_PWCTRL2, b"\x10"),
-            (_VMCTRL1, b"\x3e\x28"),
-            (_VMCTRL2, b"\x86"),
-            (_PIXSET, b"\x55"),
-            (_FRMCTR1, b"\x00\x18"),
-            (_DISCTRL, b"\x08\x82\x27"),
-            (_ENA3G, b"\x00"),
-            (_GAMSET, b"\x01"),
-            (_PGAMCTRL, b"\x0f\x31\x2b\x0c\x0e\x08\x4e\xf1\x37\x07\x10\x03\x0e\x09\x00"),
-            (_NGAMCTRL, b"\x00\x0e\x14\x03\x11\x07\x31\xc1\x48\x08\x0f\x0c\x31\x36\x0f"),
-            (_MADCTL, self.madctl)):
+            (RDDSDR, b"\x03\x80\x02"),
+            (PWCTLB, b"\x00\xc1\x30"),
+            (PWRONCTL, b"\x64\x03\x12\x81"),
+            (DTCTLA, b"\x85\x00\x78"),
+            (PWCTLA, b"\x39\x2c\x00\x34\x02"),
+            (PRCTL, b"\x20"),
+            (DTCTLB, b"\x00\x00"),
+            (PWCTL1, b"\x23"),
+            (PWCTL1, b"\x10"),
+            (VMCTL1, b"\x3e\x28"),
+            (VMCTL2, b"\x86"),
+            (PIXSET, b"\x55"),
+            (FRMCTL1, b"\x00\x18"),
+            (DISCTL, b"\x08\x82\x27"),
+            (ENA3G, b"\x00"),
+            (GAMMASET, b"\x01"),
+            (PGAMCTL, b"\x0f\x31\x2b\x0c\x0e\x08\x4e\xf1\x37\x07\x10\x03\x0e\x09\x00"),
+            (NGAMCTL, b"\x00\x0e\x14\x03\x11\x07\x31\xc1\x48\x08\x0f\x0c\x31\x36\x0f"),
+            (MADCTL, self.madctl)):
             self._write(command, data)
-        self._write(_SLPOUT)
+        self._write(SLPOUT)
         sleep_ms(120)
-        self._write(_DISPON)
+        self._write(DISPON)
         sleep_ms(50)
 
     def reset(self):
@@ -153,15 +124,15 @@ class ILI9341:
             spi.write(data)
 
     def _writeblock(self, x0, y0, x1, y1, data=None):
-        self._write(_CASET, pack(">HH", x0, x1))
-        self._write(_PASET, pack(">HH", y0, y1))
-        self._write(_RAMWR, data)
+        self._write(CASET, pack(">HH", x0, x1))
+        self._write(PASET, pack(">HH", y0, y1))
+        self._write(RAMWR, data)
 
     def _readblock(self, x0, y0, x1, y1):
-        self._write(_CASET, pack(">HH", x0, x1))
-        self._write(_PASET, pack(">HH", y0, y1))
+        self._write(CASET, pack(">HH", x0, x1))
+        self._write(PASET, pack(">HH", y0, y1))
         if data is None:
-            return self._read(_RAMRD, (x1 - x0 + 1) * (y1 - y0 + 1) * 3)
+            return self._read(RAMRD, (x1 - x0 + 1) * (y1 - y0 + 1) * 3)
 
     def _read(self, command, count):
         with self.spi as spi:
@@ -243,7 +214,7 @@ class ILI9341:
 
     def scroll(self, dy):
         self._scroll = (self._scroll + dy) % self.height
-        self._write(_VSCRSADD, pack(">H", self._scroll))
+        self._write(VSCRSADD, pack(">H", self._scroll))
 
     def next_line(self, cury, char_h):
         global scrolling

@@ -1,6 +1,8 @@
 # test of printing multiple fonts to the ILI9341 on an M5Stack using H/W SP
 # MIT License; Copyright (c) 2017 Jeffrey N. Magee
 
+from hwspi.hwspi import VSPI
+
 from ili9341 import ILI9341, color565
 from ili9341.fonts import tt14
 from ili9341.fonts import glcdfont
@@ -12,7 +14,7 @@ fonts = [glcdfont, tt14, tt24, tt32]
 
 text = 'Now is the time for all good men to come to the aid of the party.'
 
-display = ILI9341(busid = 2, cs = 22, dc = 21, baudrate = 60000000)
+display = ILI9341(busid = VSPI, cs = 22, dc = 21, baudrate = 60000000)
 
 display.erase()
 display.set_pos(0, 0)

@@ -4,27 +4,8 @@ from micropython import const
 # Maximum Number of Pixels per SPI Write
 CHUNK = const(1024)
 
-#   ESP32 Hardware SPI Buses
-HSPI        = const(1)
-VSPI        = const(2)
-
-#   Pins Associated with the Hardware SPI Buses
-BUSPINS = {
-    HSPI: {
-        'sck': const(14),
-        'mosi': const(13),
-        'miso': const(12)
-    },
-    VSPI: {
-        'sck': const(18),
-        'mosi': const(23),
-        'miso': const(19)
-    }
-}
-
 #   Miscelleanous Default Settings
 DEFAULT_BAUDRATE = const(50000000)  # Default Baud Rate
-DEFAULT_SPI_BUS  = VSPI             # Default SPI Bus to Use
 DEFAULT_HEIGHT   = const(320)       # Default TFT Height
 DEFAULT_WIDTH    = const(240)       # Default TFT Width
 DEFAULT_CS_PIN   = const(22)        # Default Pin for TFT SPI Chip Select
@@ -37,7 +18,7 @@ DEFAULT_MADCTL   = const(0x88)      # Default Memory Access Control
 #   IlI9341 registers definitions
 
 # LCD control registers
-NOP         = const(0x00)
+NOP         = const(0x00)   # No Operation
 SWRESET     = const(0x01)   # Software Reset
 
 # LCD Read status registers
@@ -49,10 +30,10 @@ RDPIXFMT    = const(0x0C)   # Read Display Pixel Format (8-Bit)
 RDDIM       = const(0x0D)   # Read Display Image Format (3-Bit)
 RDDSM       = const(0x0E)   # Read Display Signal Mode (8-Bit)
 RDDSDR      = const(0x0F)   # Read Display Self-Diagnostic Result (8-Bit)
-RDID1       = const(0xDA)
-RDID2       = const(0xDB)
-RDID3       = const(0xDC)
-RDID4       = const(0xDD)
+RDID1       = const(0xDA)   # Read ID1 (8-Bit)
+RDID2       = const(0xDB)   # Read ID2 (8-Bit)
+RDID3       = const(0xDC)   # Read ID3 (8-Bit)
+RDID4       = const(0xD3)   # Read ID4 (8-Bit)
 
 # LCD settings registers
 SLPIN       = const(0x10)   # Enter Sleep Mode
@@ -61,37 +42,42 @@ SLPOUT      = const(0x11)   # Exit Sleep Mode
 PTLON       = const(0x12)   # Partial Mode ON
 NORON       = const(0x13)   # Partial Mode OFF, Normal Display mode ON
 
-INVOFF      = const(0x20)
-INVON       = const(0x21)
+INVOFF      = const(0x20)   # Display Inversion Off
+INVON       = const(0x21)   # Display Inversion On
 GAMMASET    = const(0x26)   # Gamma Set
-LCDOFF      = const(0x28)   # Display Off
-LCDON       = const(0x29)   # Display On
+DISPOFF     = const(0x28)   # Display Off
+DISPON      = const(0x29)   # Display On
 
 CASET       = const(0x2A)   # Column Address Set
 PASET       = const(0x2B)   # Page Address Set
 RAMWR       = const(0x2C)   # Memory Write
-RGBSET      = const(0x2D)
+RGBSET      = const(0x2D)   # Color Set
 RAMRD       = const(0x2E)   # Memory Read
 
-PTLAR       = const(0x30)
+PTLAR       = const(0x30)   # Partial Area
+VSCRDEF     = const(0x33)   # Vertical Scrolling Definition
 MADCTL      = const(0x36)   # Memory Access Control
 VSCRSADD    = const(0x37)   # Vertical Scrolling Start Address
-PIXFMT      = const(0x3A)   # Pixel Format Set
+IDMOFF      = const(0x38)   # Idle Mode Off
+IDMON       = const(0x39)   # Idle Mode On
+PIXSET      = const(0x3A)   # Pixel Format Set
+RAMWCONT    = const(0x3C)   # Write Memory Continue
+RAMRCONT    = const(0x3E)   # Read Memory Continue
+
+WRDISBV     = const(0x51)   # Write Display Brightness
+RDDISBV     = const(0x52)   # Read Display Brightness
 
 IFMODE      = const(0xB0)   # RGB Interface Control
 FRMCTL1     = const(0xB1)   # Frame Rate Control (In Normal Mode)
 FRMCTL2     = const(0xB2)   # Frame Rate Control (In Idle Mode)
 FRMCTL3     = const(0xB3)   # Frame Rate Control (In Partial Mode)
 INVCTL      = const(0xB4)   # Frame Inversion Control
-PRCTL       = const(0xB5)   # Blanking Porch ControlVFP, VBP, HFP, HBP
+PRCCTL      = const(0xB5)   # Blanking Porch ControlVFP, VBP, HFP, HBP
 DISCTL      = const(0xB6)   # Display Function Control
 ETMOD       = const(0xB7)   # Entry mode set
 
 PWCTL1      = const(0xC0)   # Power Control 1
 PWCTL2      = const(0xC1)   # Power Control 2
-PWCTL3      = const(0xC2)   # Power Control 3
-PWCTL4      = const(0xC3)   # Power Control 4
-PWCTL5      = const(0xC4)   # Power Control 5
 VMCTL1      = const(0xC5)   # VCOM Control 1
 VMCTL2      = const(0xC7)   # VCOM Control 2
 
@@ -107,5 +93,5 @@ DTCTLB      = const(0xEA)   # Driver Timing Control B
 PWRONCTL    = const(0xED)   # Power on Sequence Control
 
 ENA3G       = const(0xF2)   # Enable Gamma Control
-IFCTL       = const(0xF6)
-PWCTL6      =  const(0xFC)
+IFCTL       = const(0xF6)   # Interface Control
+PRCTL       = const(0xF7)   # Pump Ratio Control
