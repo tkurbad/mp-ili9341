@@ -123,7 +123,7 @@ class ILI9341:
             self.dc(1)
             spi.write(data)
 
-    def _writeblock(self, x0, y0, x1, y1, data=None):
+    def _writeblock(self, x0, y0, x1, y1, data = None):
         self._write(CASET, pack(">HH", x0, x1))
         self._write(PASET, pack(">HH", y0, y1))
         self._write(RAMWR, data)
@@ -141,7 +141,7 @@ class ILI9341:
             data = spi.read(count)
         return data
 
-    def pixel(self, x, y, color=None):
+    def pixel(self, x, y, color = None):
         if color is None:
             r, b, g = self._readblock(x, y, x, y)
             return color565(r, g, b)
@@ -159,7 +159,7 @@ class ILI9341:
         else:
             color = self._colormap[0:2] #background
         for i in range(CHUNK):
-            self._buf[2*i]=color[0]; self._buf[2*i+1]=color[1]
+            self._buf[2*i]=color[0]; self._buf[2*i+1] = color[1]
         chunks, rest = divmod(w * h, CHUNK)
         self._writeblock(x, y, x + w - 1, y + h - 1, None)
         if chunks:
@@ -194,7 +194,7 @@ class ILI9341:
         if rest != 0:
             mv = memoryview(self._buf)
             self._data(mv[:rest*2])
-    
+
     def chars(self, str, x, y):
         str_w  = self._font.get_width(str)
         div, rem = divmod(self._font.height(),8)
@@ -211,6 +211,11 @@ class ILI9341:
         fb = FrameBuffer(buf, str_w, self._font.height(), MONO_VLSB)
         self.blit(fb, x, y, str_w, self._font.height())
         return x + str_w
+
+    def bitmap(self, bitmap, x, y, w, h):
+        fb = FrameBuffer(bytearray(bitmap), w, h, MONO_VLSB)
+        self.blit(fb, x, y, w, h)
+        return x + w
 
     def scroll(self, dy):
         self._scroll = (self._scroll + dy) % self.height
